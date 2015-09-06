@@ -1,5 +1,8 @@
 package com.example.edward.todo;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -16,6 +19,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> items;
     private ArrayAdapter<String> itemsAdapter;
     private ListView lvItems;
+
+    private TodoListDbHelper dbHelper = new TodoListDbHelper(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +42,14 @@ public class MainActivity extends AppCompatActivity {
         // in the adapter
         lvItems.setAdapter(itemsAdapter);
 
+        // get the list of items from the database
+        getListItems();
+
         // add the long-touch to delete function to the listView in a separate method
         setupListViewListener();
     }
 
-    // Attaches a long click listener to the listview
+    // Attaches a long click listener to the list View
     private void setupListViewListener() {
         lvItems.setOnItemLongClickListener(
                 new AdapterView.OnItemLongClickListener() {
@@ -86,9 +94,44 @@ public class MainActivity extends AppCompatActivity {
         EditText etNewItem = (EditText) findViewById(R.id.etNewItem);
         // set the item text to the text in the field
         String itemText = etNewItem.getText().toString();
-        // add the item text to the itemsAdapter
-        itemsAdapter.add(itemText);
+
+        // get the database in write mode
+        // TODO: call this function asynchronously because it is slow!
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        // create a new map of values, where column names are keys
+        ContentValues values = new ContentValues();
+        values.put(TodoListDbHelper.COLUMN_NAME_DESCRIPTION, itemText);
+        // insert row
+        db.insert(TodoListDbHelper.TABLE_NAME, null, values);
+        db.close(); // Close database connection
+
+        // refresh the list of items to include the new item
+        getListItems();
+
         // clear the text field by setting it to an empty string
         etNewItem.setText("");
+    }
+
+    public void getListItems()
+    {
+        // select all query
+        String selectQuery = "SELECT * FROM " + TodoListDbHelper.TABLE_NAME;
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+        {
+            while (c.moveToNext())
+            {
+                if (c.getColumnIndex(TodoListDbHelper.COLUMN_NAME_DESCRIPTION) > -1)
+                {
+                    String item = c.getString(c.getColumnIndex(TodoListDbHelper.COLUMN_NAME_DESCRIPTION));
+                    items.add(item);
+                }
+            }
+            c.moveToNext();
+            itemsAdapter.notifyDataSetChanged();
+        }
     }
 }
