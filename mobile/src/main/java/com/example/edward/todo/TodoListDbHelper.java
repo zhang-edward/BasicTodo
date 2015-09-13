@@ -11,8 +11,8 @@ public class TodoListDbHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "todo.db";
     public static final String TABLE_NAME = "todoList_table";
-    public static final String COLUMN_NAME_ENTRY_ID = "entryid";
-    public static final String COLUMN_NAME_DESCRIPTION = "ITEM";
+    public static final String COLUMN_NAME_ENTRY_ID = "EntryId";
+    public static final String COLUMN_NAME_DESCRIPTION = "Item";
 
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + TABLE_NAME +

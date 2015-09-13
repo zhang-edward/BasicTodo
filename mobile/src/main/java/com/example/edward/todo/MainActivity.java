@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
                         // Return true consumes the long click event (marks it handled)
                         return true;
                     }
-
                 });
     }
 
